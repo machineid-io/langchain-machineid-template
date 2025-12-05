@@ -8,14 +8,17 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 
 
+# ---------------------------------------
+# MachineID.io Endpoints
+# ---------------------------------------
 BASE_URL = "https://machineid.io"
 REGISTER_URL = f"{BASE_URL}/api/v1/devices/register"
 VALIDATE_URL = f"{BASE_URL}/api/v1/devices/validate"
 
 
-# -------------------------
+# ---------------------------------------
 # Helper: Load org key
-# -------------------------
+# ---------------------------------------
 def get_org_key() -> str:
     org_key = os.getenv("MACHINEID_ORG_KEY")
     if not org_key:
@@ -27,9 +30,9 @@ def get_org_key() -> str:
     return org_key
 
 
-# -------------------------
+# ---------------------------------------
 # Register device
-# -------------------------
+# ---------------------------------------
 def register_device(org_key: str, device_id: str) -> Dict[str, Any]:
     headers = {
         "x-org-key": org_key,
@@ -45,9 +48,9 @@ def register_device(org_key: str, device_id: str) -> Dict[str, Any]:
     return data
 
 
-# -------------------------
+# ---------------------------------------
 # Validate device
-# -------------------------
+# ---------------------------------------
 def validate_device(org_key: str, device_id: str) -> Dict[str, Any]:
     headers = {"x-org-key": org_key}
     params = {"deviceId": device_id}
@@ -63,15 +66,15 @@ def validate_device(org_key: str, device_id: str) -> Dict[str, Any]:
     return data
 
 
-# -------------------------
+# ---------------------------------------
 # MachineID-aware LangChain example
-# -------------------------
+# ---------------------------------------
 def run_langchain_example() -> str:
     print("\n→ Building minimal LangChain chain...")
 
     model = ChatOpenAI(model="gpt-4o-mini")
 
-    # ⭐ UPDATED PROMPT (matches CrewAI + Swarm style)
+    # ⭐ Clean, concise, aligned with CrewAI + Swarm examples
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", "You are a concise assistant."),
@@ -88,9 +91,9 @@ def run_langchain_example() -> str:
     return response.content
 
 
-# -------------------------
+# ---------------------------------------
 # Main
-# -------------------------
+# ---------------------------------------
 def main() -> None:
     org_key = get_org_key()
     device_id = os.getenv("MACHINEID_DEVICE_ID", "langchain-agent-01")
@@ -138,4 +141,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

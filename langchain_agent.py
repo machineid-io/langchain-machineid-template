@@ -81,10 +81,12 @@ def run_langchain_example() -> str:
         (
     "human",
     "Give me 3 short steps for using LangChain workers safely with MachineID.io. "
-    "MachineID.io is a lightweight device-level start-gate: workers register once with a unique user defined deviceId "
-    "and validate before doing work so orgs can enforce simple device limits and prevent uncontrolled scaling. "
-    "Keep each step brief and focused only on that register/validate flow."
+    "MachineID.io is a lightweight device-level gate: each worker uses a user-assigned deviceId, "
+    "registers once, and validates before running tasks so organizations can enforce simple device "
+    "limits and prevent uncontrolled scaling. Keep each step brief and practical, focusing only on "
+    "registering, validating, and stopping workers when validation fails."
 ),
+
 
 
     ]

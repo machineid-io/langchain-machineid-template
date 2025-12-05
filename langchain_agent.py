@@ -9,7 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 
 BASE_URL = "https://machineid.io"
-REGISTER_URL = f"{BASE_URL}/api/v1/devices/register}"
+REGISTER_URL = f"{BASE_URL}/api/v1/devices/register"
 VALIDATE_URL = f"{BASE_URL}/api/v1/devices/validate"
 
 

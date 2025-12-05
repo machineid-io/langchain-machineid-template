@@ -79,15 +79,15 @@ def run_langchain_example() -> str:
     [
         ("system", "You are a concise assistant."),
         (
-            "human",
-            "Give me 3 practical steps for using LangChain workers safely with MachineID.io. "
-            "MachineID.io lets developers register each worker with a unique deviceId and validate that worker "
-            "before running tasks, enforcing simple plan-based limits on how many devices an org can use. "
-            "Focus your steps on: (1) registering each worker with a stable deviceId, "
-            "(2) calling MachineID.io to validate before running tasks, and "
-            "(3) stopping or not starting workers when validation shows the org has reached its device limit "
-            "or that the worker should no longer run."
-        ),
+    "human",
+    "Give me 3 practical steps for using LangChain workers safely with MachineID.io. "
+    "MachineID.io provides device-level registration and validation to keep worker fleets "
+    "predictable and under control. Focus your steps on registering each worker with a unique, "
+    "stable deviceId (such as a name or UUID), validating with MachineID.io before running tasks, "
+    "and stopping workers when validation indicates a limit has been reached or the worker "
+    "is not allowed to continue."
+),
+
     ]
 )
 

@@ -76,23 +76,22 @@ def run_langchain_example() -> str:
 
     # ⭐ Clean, concise, aligned with CrewAI + Swarm examples
     prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", "You are a concise assistant."),
-        (
-            "human",
-            "Give me 3 practical steps for using LangChain workers safely with MachineID.io. "
-            "MachineID.io provides device-level registration and validation to keep worker fleets "
-            "predictable and under control. Focus your steps on registering each worker with a unique "
-            "deviceId, validating before running tasks, and treating failed validation or limit conditions "
-            "as a hard stop to prevent uncontrolled scaling."
-        ),
-    ]
-)
+        [
+            ("system", "You are a concise assistant."),
+            (
+                "human",
+                "Give me 3 practical steps for using LangChain workers safely with MachineID.io. "
+                "MachineID.io provides device-level registration and validation to keep worker fleets "
+                "predictable and under control. Focus your steps on registering each worker with a unique "
+                "deviceId, validating before running tasks, and treating failed validation or limit conditions "
+                "as a hard stop to prevent uncontrolled scaling."
+            ),
+        ]
+    )
 
-chain = prompt | model
-response = chain.invoke({})
-return response.content
-
+    chain = prompt | model
+    response = chain.invoke({})
+    return response.content
 
 
 # ---------------------------------------

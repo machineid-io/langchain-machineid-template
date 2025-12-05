@@ -81,7 +81,7 @@ def run_langchain_example() -> str:
             (
                 "human",
                 "Give me 3 steps for using LangChain workers safely with MachineID.io "
-                "to prevent uncontrolled scaling.",
+                "using their agent register and validate to prevent uncontrolled scaling.",
             ),
         ]
     )

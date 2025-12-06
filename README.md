@@ -1,5 +1,5 @@
 # MachineID.io + LangChain Starter Template
-### Add device limits to LangChain agents in <10 lines.
+### Add device limits to LangChain agents with one small register/validate block.
 
 A minimal template showing how to use MachineID.io to control LangChain-based agents or workers.  
 Use this starter to prevent uncontrolled scaling, enforce hard device limits, and ensure each agent validates before running.
@@ -121,4 +121,3 @@ API → https://machineid.io/api
 - When you upgrade or change plans in Stripe, limits update immediately — **your agents do not need new code**.
 
 MIT licensed · Built by MachineID.io
-

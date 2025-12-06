@@ -1,8 +1,8 @@
 # MachineID.io + LangChain Starter Template
 ### Add device limits to LangChain agents with one small register/validate block.
 
-A minimal template showing how to use MachineID.io to control LangChain-based agents or workers.  
-Use this starter to prevent uncontrolled scaling, enforce hard device limits, and ensure each agent validates before running.
+A minimal LangChain starter showing how to wrap any agent or worker with MachineID.io device registration and validation.  
+Use this template to prevent uncontrolled scaling, enforce hard device limits, and ensure each agent validates before running.
 
 The free org key supports **3 devices**, with higher limits available on paid plans.
 
@@ -11,23 +11,28 @@ The free org key supports **3 devices**, with higher limits available on paid pl
 ## What this repo gives you
 
 - A simple Python script (`langchain_agent.py`) that:
-  - Reads `MACHINEID_ORG_KEY` from the environment
-  - Calls `/api/v1/devices/register` with `x-org-key` and a `deviceId`
-  - Calls `/api/v1/devices/validate` before running
-  - Runs a LangChain prompt that outputs a **demo 3-step example** (for illustration only).
-- A minimal `requirements.txt` with no heavy dependencies
+  - Reads `MACHINEID_ORG_KEY` from the environment  
+  - Calls `/api/v1/devices/register` with `x-org-key` and a `deviceId`  
+  - Calls `/api/v1/devices/validate` before running  
+  - Runs a LangChain prompt that outputs a **demo 3-step example** (for illustration only).  
+- A minimal `requirements.txt`
 - A pattern suitable for:
   - LangChain workers  
   - LCEL chains  
   - Background jobs  
   - Multi-agent orchestration  
-  - Local experimentation
+  - Local experimentation  
 
 ---
 
 ## Quick start
 
 ### 1. Clone this repo or click **“Use this template.”**
+
+```bash
+git clone https://github.com/machineid-io/langchain-machineid-template.git
+cd langchain-machineid-template
+```
 
 ---
 
@@ -41,15 +46,15 @@ pip install -r requirements.txt
 
 ---
 
-### 3. Get a free org key (supports 3 devices):
+### 3. Get a free org key (supports 3 devices)
 
-- Visit https://machineid.io  
-- Click **“Generate free org key”**  
-- Copy the key (it begins with `org_...`)
+Visit https://machineid.io  
+Click **“Generate free org key”**  
+Copy the key (it begins with `org_`)
 
 ---
 
-### 4. Set environment variables:
+### 4. Set environment variables
 
 ```bash
 export MACHINEID_ORG_KEY=org_your_key_here
@@ -65,7 +70,7 @@ MACHINEID_ORG_KEY=org_xxx OPENAI_API_KEY=sk_xxx python langchain_agent.py
 
 ---
 
-### 5. Run the starter:
+### 5. Run the starter
 
 ```bash
 python langchain_agent.py
@@ -77,15 +82,45 @@ You’ll see a register call, a validate call, and a LangChain response showing 
 
 ## How it works
 
-1. The agent registers itself with MachineID.io.  
-2. It validates before running any work.  
-3. If validation passes, it runs a simple LangChain chain.  
-4. If not allowed, it exits immediately.
+1. The agent registers itself with MachineID.io  
+2. It validates before running any work  
+3. If validation passes, it runs a LangChain chain  
+4. If validation fails, it exits immediately  
 
-**Drop the same register/validate block into any LangChain agent, LCEL chain, background job, Celery worker, or RQ worker.**  
-This ensures all your agents follow the same device policy and stay within your org limits.
+This prevents accidental worker explosions and enforces clean scaling behavior.
 
-This prevents runaway agent spawning and ensures controlled scaling across your fleet.
+---
+
+## Using this in your own LangChain agents
+
+To integrate MachineID.io:
+
+- Call **register** when your worker starts  
+- Call **validate** before executing major actions or generating output  
+- Stop or pause execution when `allowed == false`  
+
+This prevents chain explosions, runaway agent spawning, and unintended cloud usage.
+
+**Drop the same register/validate block into any LangChain agent, LCEL chain, or background worker.**  
+This is all you need to enforce simple device limits across your LangChain fleet.
+
+---
+
+## Optional: fully automated org creation
+
+Most users generate a free org key from the dashboard.
+
+If you are building meta-agents or automated back-ends that need to bootstrap from zero, you can create an org + key programmatically:
+
+```bash
+curl -X POST https://machineid.io/api/v1/org/create \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+The response contains a ready-to-use `orgApiKey`.
+
+(This pattern will get its own dedicated template/repo in the future.)
 
 ---
 
@@ -93,7 +128,7 @@ This prevents runaway agent spawning and ensures controlled scaling across your 
 
 - `langchain_agent.py` — Register + validate + LangChain example  
 - `requirements.txt` — Minimal dependencies  
-- `LICENSE` — MIT licensed
+- `LICENSE` — MIT licensed  
 
 ---
 
@@ -109,15 +144,15 @@ API → https://machineid.io/api
 ## Other templates
 
 → Python starter: https://github.com/machineid-io/machineid-python-starter  
-→ CrewAI:       https://github.com/machineid-io/crewai-machineid-template  
-→ OpenAI Swarm: https://github.com/machineid-io/swarm-machineid-template  
+→ CrewAI:        https://github.com/machineid-io/crewai-machineid-template  
+→ OpenAI Swarm:  https://github.com/machineid-io/swarm-machineid-template  
 
 ---
 
 ## How plans work (quick overview)
 
-- Plans are per **org**, each with its own `orgApiKey`.  
-- Device limits apply to unique `deviceId` values registered via `/devices/register`.  
-- When you upgrade or change plans in Stripe, limits update immediately — **your agents do not need new code**.
+- Plans are per **org**, each with its own `orgApiKey`  
+- Device limits apply to unique `deviceId` values registered via `/api/v1/devices/register`  
+- When you upgrade or change plans, limits update immediately — **your agents do not need new code**  
 
 MIT licensed · Built by MachineID.io

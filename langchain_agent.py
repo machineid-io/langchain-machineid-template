@@ -23,11 +23,11 @@ def get_org_key() -> str:
     org_key = os.getenv("MACHINEID_ORG_KEY")
     if not org_key:
         raise RuntimeError(
-            "Missing MACHINEID_ORG_KEY. Set it in your environment.\n"
+            "Missing MACHINEID_ORG_KEY. Set it in your environment or via a .env file.\n"
             "Example:\n"
             "  export MACHINEID_ORG_KEY=org_your_key_here\n"
         )
-    return org_key
+    return org_key.strip()
 
 
 # ---------------------------------------
@@ -42,9 +42,18 @@ def register_device(org_key: str, device_id: str) -> Dict[str, Any]:
 
     print(f"→ Registering device '{device_id}' via {REGISTER_URL} ...")
     resp = requests.post(REGISTER_URL, headers=headers, json=payload, timeout=10)
-    data = resp.json()
 
-    print(f"✔ register response: status={data.get('status')}, handler={data.get('handler')}")
+    try:
+        data = resp.json()
+    except Exception:
+        print("❌ Could not parse JSON from register response.")
+        print("Status code:", resp.status_code)
+        print("Body:", resp.text)
+        raise
+
+    status = data.get("status")
+    handler = data.get("handler")
+    print(f"✔ register response: status={status}, handler={handler}")
     return data
 
 
@@ -57,11 +66,23 @@ def validate_device(org_key: str, device_id: str) -> Dict[str, Any]:
 
     print(f"→ Validating device '{device_id}' via {VALIDATE_URL} ...")
     resp = requests.get(VALIDATE_URL, headers=headers, params=params, timeout=10)
-    data = resp.json()
+
+    try:
+        data = resp.json()
+    except Exception:
+        print("❌ Could not parse JSON from validate response.")
+        print("Status code:", resp.status_code)
+        print("Body:", resp.text)
+        raise
+
+    status = data.get("status")
+    handler = data.get("handler")
+    allowed = bool(data.get("allowed", False))
+    reason = data.get("reason", "unknown")
 
     print(
-        f"✔ validate response: status={data.get('status')}, "
-        f"handler={data.get('handler')}, allowed={data.get('allowed')}, reason={data.get('reason')}"
+        f"✔ validate response: status={status}, "
+        f"handler={handler}, allowed={allowed}, reason={reason}"
     )
     return data
 
@@ -74,24 +95,22 @@ def run_langchain_example() -> str:
 
     model = ChatOpenAI(model="gpt-4o-mini")
 
-    # ⭐ Clean, concise, aligned with CrewAI + Swarm examples
+    # Clean, concise prompt aligned with CrewAI + Swarm examples
     prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", "You are a concise assistant."),
-        (
-    "human",
-    "Give me 3 short steps for using LangChain workers safely with MachineID.io. "
-    "MachineID.io is a lightweight device-level gate: each worker uses a user-assigned deviceId, "
-    "registers once, and validates before running tasks so organizations can enforce simple device "
-    "limits and prevent uncontrolled scaling. Keep each step brief and practical, focusing only on "
-    "registering, validating, and stopping workers when validation fails."
-),
-
-
-
-    ]
-)
-
+        [
+            ("system", "You are a concise assistant."),
+            (
+                "human",
+                (
+                    "Give me 3 short steps for using LangChain workers safely with MachineID.io. "
+                    "MachineID.io is a lightweight device-level gate: each worker uses a user-assigned deviceId, "
+                    "registers once, and validates before running tasks so organizations can enforce simple device "
+                    "limits and prevent uncontrolled scaling. Keep each step brief and practical, focusing only on "
+                    "registering, validating, and stopping workers when validation fails."
+                ),
+            ),
+        ]
+    )
 
     chain = prompt | model
     response = chain.invoke({})
@@ -113,10 +132,19 @@ def main() -> None:
     reg = register_device(org_key, device_id)
 
     print("\nRegistration summary:")
-    print("  planTier    :", reg.get("planTier"))
-    print("  limit       :", reg.get("limit"))
-    print("  devicesUsed :", reg.get("devicesUsed"))
-    print("  remaining   :", reg.get("remaining"))
+    plan_tier = reg.get("planTier")
+    limit = reg.get("limit")
+    devices_used = reg.get("devicesUsed")
+    remaining = reg.get("remaining")
+
+    if plan_tier is not None:
+        print("  planTier    :", plan_tier)
+    if limit is not None:
+        print("  limit       :", limit)
+    if devices_used is not None:
+        print("  devicesUsed :", devices_used)
+    if remaining is not None:
+        print("  remaining   :", remaining)
     print()
 
     if reg.get("status") == "limit_reached":
@@ -128,13 +156,15 @@ def main() -> None:
     time.sleep(2)
 
     val = validate_device(org_key, device_id)
+    allowed = bool(val.get("allowed", False))
+    reason = val.get("reason", "unknown")
 
     print("\nValidation summary:")
-    print("  allowed :", val.get("allowed"))
-    print("  reason  :", val.get("reason"))
+    print("  allowed :", allowed)
+    print("  reason  :", reason)
     print()
 
-    if not val.get("allowed"):
+    if not allowed:
         print("🚫 Device not allowed. Agent should exit.")
         sys.exit(0)
 

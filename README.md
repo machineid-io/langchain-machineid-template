@@ -106,24 +106,6 @@ This is all you need to enforce simple device limits across your LangChain fleet
 
 ---
 
-## Optional: fully automated org creation
-
-Most users generate a free org key from the dashboard.
-
-If you are building meta-agents or automated back-ends that need to bootstrap from zero, you can create an org + key programmatically:
-
-```bash
-curl -X POST https://machineid.io/api/v1/org/create \
-  -H "Content-Type: application/json" \
-  -d '{}'
-```
-
-The response contains a ready-to-use `orgApiKey`.
-
-(This pattern will get its own dedicated template/repo in the future.)
-
----
-
 ## Files in this repo
 
 - `langchain_agent.py` — Register + validate + LangChain example  

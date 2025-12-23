@@ -124,8 +124,8 @@ def run_langchain_example() -> str:
 def main() -> None:
     org_key = must_env("MACHINEID_ORG_KEY")
 
-    # deterministic, non-identifying default
-    device_id = env("MACHINEID_DEVICE_ID", "langchain:agent-01") or "langchain:agent-01"
+    # deterministic, non-identifying default (unique per template)
+    device_id = env("MACHINEID_DEVICE_ID", "langchain-agent-01") or "langchain-agent-01"
 
     if not org_key.startswith("org_"):
         print("[fatal] MACHINEID_ORG_KEY must start with org_", file=sys.stderr)
@@ -153,6 +153,7 @@ def main() -> None:
         # If register fails, do not proceed. This is a safety boundary.
         print("🚫 Register did not succeed. Exiting.")
         sys.exit(1)
+
 
     # 2) Validate (hard gate)
     time.sleep(1)

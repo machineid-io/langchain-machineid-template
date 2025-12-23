@@ -1,7 +1,7 @@
-# MachineID.io + LangChain Starter Template
-### Add device limits to LangChain agents with one small register/validate block.
+# MachineID + LangChain Starter Template
+### Add hard device limits to LangChain agents with one small register/validate block.
 
-A minimal LangChain starter showing how to wrap any agent or worker with MachineID.io device registration and validation.  
+A minimal LangChain starter showing how to wrap any agent or worker with MachineID device registration and validation.  
 Use this template to prevent uncontrolled scaling, enforce hard device limits, and ensure each agent validates before running.
 
 The free org key supports **3 devices**, with higher limits available on paid plans.
@@ -12,9 +12,15 @@ The free org key supports **3 devices**, with higher limits available on paid pl
 
 - A simple Python script (`langchain_agent.py`) that:
   - Reads `MACHINEID_ORG_KEY` from the environment  
-  - Calls `/api/v1/devices/register` with `x-org-key` and a `deviceId`  
-  - Calls `/api/v1/devices/validate` before running  
-  - Runs a LangChain prompt that outputs a **demo 3-step example** (for illustration only).  
+  - Calls **POST** `/api/v1/devices/register` with `x-org-key` and a `deviceId`  
+  - Calls **POST** `/api/v1/devices/validate` (canonical) before running  
+  - Enforces a **hard gate**:
+    - If `allowed == false`, execution stops immediately  
+  - Prints stable decision metadata:
+    - `allowed`
+    - `code`
+    - `request_id`
+  - Runs a LangChain prompt that outputs a demo 3-step example (illustration only)  
 - A minimal `requirements.txt`
 - A pattern suitable for:
   - LangChain workers  
@@ -36,7 +42,7 @@ cd langchain-machineid-template
 
 ---
 
-### 2. Install dependencies in a virtual environment:
+### 2. Install dependencies in a virtual environment
 
 ```bash
 python3.11 -m venv venv
@@ -59,7 +65,12 @@ Copy the key (it begins with `org_`)
 ```bash
 export MACHINEID_ORG_KEY=org_your_key_here
 export OPENAI_API_KEY=sk_your_openai_key_here
-export MACHINEID_DEVICE_ID=langchain-agent-01
+```
+
+Optional override:
+
+```bash
+export MACHINEID_DEVICE_ID=langchain:agent-01
 ```
 
 **One-liner (run immediately):**
@@ -76,16 +87,16 @@ MACHINEID_ORG_KEY=org_xxx OPENAI_API_KEY=sk_xxx python langchain_agent.py
 python langchain_agent.py
 ```
 
-You’ll see a register call, a validate call, and a LangChain response showing a **demo 3-step example** (illustration only).
+You’ll see a register call, a validate decision (`allowed/code/request_id`), and then a LangChain response.
 
 ---
 
 ## How it works
 
-1. The agent registers itself with MachineID.io  
-2. It validates before running any work  
-3. If validation passes, it runs a LangChain chain  
-4. If validation fails, it exits immediately  
+1. The worker registers itself with MachineID (idempotent)  
+2. It validates (POST, canonical) before running any work  
+3. If `allowed == true`, it runs a LangChain chain  
+4. If `allowed == false`, it exits immediately (hard gate)  
 
 This prevents accidental worker explosions and enforces clean scaling behavior.
 
@@ -93,15 +104,13 @@ This prevents accidental worker explosions and enforces clean scaling behavior.
 
 ## Using this in your own LangChain agents
 
-To integrate MachineID.io:
+To integrate MachineID:
 
 - Call **register** when your worker starts  
 - Call **validate** before executing major actions or generating output  
-- Stop or pause execution when `allowed == false`  
+- Stop execution immediately when `allowed == false`  
 
-This prevents chain explosions, runaway agent spawning, and unintended cloud usage.
-
-**Drop the same register/validate block into any LangChain agent, LCEL chain, or background worker.**  
+Drop the same register/validate block into any LangChain agent, LCEL chain, or background worker.  
 This is all you need to enforce simple device limits across your LangChain fleet.
 
 ---
@@ -119,7 +128,6 @@ This is all you need to enforce simple device limits across your LangChain fleet
 Dashboard → https://machineid.io/dashboard  
 Generate free org key → https://machineid.io  
 Docs → https://machineid.io/docs  
-API → https://machineid.io/api  
 
 ---
 
@@ -135,6 +143,6 @@ API → https://machineid.io/api
 
 - Plans are per **org**, each with its own `orgApiKey`  
 - Device limits apply to unique `deviceId` values registered via `/api/v1/devices/register`  
-- When you upgrade or change plans, limits update immediately — **your agents do not need new code**  
+- Plan changes take effect immediately — no agent code changes required  
 
-MIT licensed · Built by MachineID.io
+MIT licensed · Built by MachineID
